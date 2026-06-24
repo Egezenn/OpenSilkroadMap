@@ -38,6 +38,12 @@ export function updateMarkers(currentLayerKey: string) {
   connectionSource.clear();
   const isWorld = currentLayerKey === 'world';
 
+  // Cache connection toggle states to avoid DOM lookups in loops
+  const toggleStates: Record<number, boolean> = {};
+  for (let i = 0; i <= 7; i++) {
+    toggleStates[i] = (document.getElementById(`toggle-conn-${i}`) as HTMLInputElement | null)?.checked ?? false;
+  }
+
   // Draw NPCs
   npcsData.forEach((npc) => {
     let region = npc.region;
@@ -119,7 +125,7 @@ export function updateMarkers(currentLayerKey: string) {
       markerSource.addFeature(feature);
 
       // Draw dashed connection lines if enabled for this category
-      const showConnections = (document.getElementById(`toggle-conn-${tp.type}`) as HTMLInputElement | null)?.checked ?? false;
+      const showConnections = toggleStates[tp.type] ?? false;
       if (renderTeleports && showConnections && tp.teleport && Array.isArray(tp.teleport)) {
         tp.teleport.forEach((dest: any) => {
           let destRegion = dest.region;

@@ -1,9 +1,9 @@
-.git
-.vs
 __pycache__
-assets/img
-assets/npcs.json
-assets/teleports.json
-game_source
-node_modules
+.git
+.vite
+.vs
 dist
+game_source
+map/public/assets/*
+!map/public/assets/icons
+node_modules

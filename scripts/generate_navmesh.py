@@ -828,10 +828,10 @@ def render_terrain_region(nvm_data, size):
     return img
 
 
-def save_png(img, path):
-    """Save RGBA image as PNG."""
+def save_webp(img, path):
+    """Save RGBA image as WEBP."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    img.save(path, "PNG")
+    img.save(path, "WEBP", quality=80)
 
 
 # ---------------------------------------------------------------------------
@@ -870,8 +870,9 @@ def generate_lower_zooms(tiles_z8, out_dir, base_zoom=8, min_zoom=0):
 
             if has_any:
                 resized = merged.resize((tile_size, tile_size), Image.LANCZOS)
-                path = os.path.join(out_dir, str(z), f"{px}x{py}.png")
-                save_png(resized, path)
+                if z in (3, 6):
+                    path = os.path.join(out_dir, str(z), f"{px}x{py}.webp")
+                    save_webp(resized, path)
                 current_tiles[(px, py)] = resized
 
         tiles_by_zoom[z] = current_tiles
@@ -943,18 +944,16 @@ def process_world_navmesh(data_dir, out_dir, obj_index):
                     (dx + 1) * tile_size, (img_y + 1) * tile_size
                 ))
                 if crop.getbbox() is not None:
-                    path = os.path.join(nm_out, "9", f"{2 * x + dx}x{child_y}.png")
-                    save_png(crop, path)
+                    path = os.path.join(nm_out, "9", f"{2 * x + dx}x{child_y}.webp")
+                    save_webp(crop, path)
                     count9 += 1
     print(f"  Level 9: {count9} tiles")
 
-    # Zoom 8: downscale 512->256
+    # Zoom 8: downscale 512->256 (in memory for generating lower zoom levels)
     print("  Generating zoom 8 (downscale)...")
     tiles_z8 = {}
     for (x, y), img in tiles_hires.items():
         z8 = img.resize((tile_size, tile_size), Image.LANCZOS)
-        path = os.path.join(nm_out, "8", f"{x}x{y}.png")
-        save_png(z8, path)
         tiles_z8[(x, y)] = z8
     print(f"  Level 8: {len(tiles_z8)} tiles")
 
@@ -1094,15 +1093,15 @@ def process_dungeon_navmesh(data_dir, out_dir):
                 continue
 
             floor_str = f"floor{floor_idx + 1:02d}"
-            png_name = f"{dungeon_id}_{floor_str}.png"
-            png_path = os.path.join(nm_out, png_name)
-            save_png(img, png_path)
+            webp_name = f"{dungeon_id}_{floor_str}.webp"
+            webp_path = os.path.join(nm_out, webp_name)
+            save_webp(img, webp_path)
 
             region_key = str(rid)
             if region_key not in manifest:
                 manifest[region_key] = []
             manifest[region_key].append({
-                'file': png_name,
+                'file': webp_name,
                 'floor': floor_idx,
                 'minX': round(min_x, 2),
                 'minZ': round(min_z, 2),
@@ -1111,7 +1110,7 @@ def process_dungeon_navmesh(data_dir, out_dir):
             })
 
             count += 1
-            print(f"  [{dungeon_id}] {dof_basename} floor {floor_idx} -> {png_name}")
+            print(f"  [{dungeon_id}] {dof_basename} floor {floor_idx} -> {webp_name}")
 
     # Write manifest JSON
     manifest_path = os.path.join(nm_out, "manifest.json")
@@ -1119,7 +1118,7 @@ def process_dungeon_navmesh(data_dir, out_dir):
     with open(manifest_path, 'w', encoding='utf-8') as f:
         json.dump(manifest, f, indent=2)
     print(f"  Manifest written: {manifest_path}")
-    print(f"  Total: {count} dungeon navmesh PNGs")
+    print(f"  Total: {count} dungeon navmesh WebPs")
 
 
 # ---------------------------------------------------------------------------
@@ -1130,7 +1129,7 @@ def main():
     parser = argparse.ArgumentParser(description="Generate navmesh PNG overlays for OpenSilkroadMap")
     parser.add_argument("--data", default=r"game_source/Data",
                         help="Path to Silkroad Data directory")
-    parser.add_argument("--out", default=os.path.join("assets", "img", "silkroad", "minimap"),
+    parser.add_argument("--out", default=os.path.join("map", "public", "assets", "img", "silkroad", "minimap"),
                         help="Output directory for navmesh PNGs")
     args = parser.parse_args()
 

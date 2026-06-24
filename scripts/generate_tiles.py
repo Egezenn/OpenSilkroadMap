@@ -22,9 +22,9 @@ TILE_SIZE = 256
 BASE_ZOOM = 8
 MIN_ZOOM = 0
 MAX_ZOOM = 9
-JPEG_QUALITY = 95
+WEBP_QUALITY = 80
 
-BASE_DIR = os.path.join("assets", "img", "silkroad", "minimap")
+BASE_DIR = os.path.join("map", "public", "assets", "img", "silkroad", "minimap")
 DUNGEON_DIR = os.path.join(BASE_DIR, "d")
 
 
@@ -39,9 +39,9 @@ def load_tile(path):
 
 
 def save_tile(img, path):
-    """Save a tile as JPEG."""
+    """Save a tile as WEBP."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    img.save(path, "JPEG", quality=JPEG_QUALITY, subsampling=0)
+    img.save(path, "WEBP", quality=WEBP_QUALITY)
 
 
 # ---------------------------------------------------------------------------
@@ -82,8 +82,9 @@ def generate_lower_zooms(tiles_by_zoom, zoom_dir_fn, tile_path_fn):
 
             if has_any:
                 resized = merged.resize((TILE_SIZE, TILE_SIZE), Image.LANCZOS)
-                path = tile_path_fn(z, px, py)
-                save_tile(resized, path)
+                if z in (3, 6):
+                    path = tile_path_fn(z, px, py)
+                    save_tile(resized, path)
                 current_tiles[(px, py)] = resized
 
         tiles_by_zoom[z] = current_tiles
@@ -132,7 +133,7 @@ def process_world_map():
         return
 
     # Load all level 8 tiles
-    pattern = re.compile(r"^(-?\d+)x(-?\d+)\.jpg$", re.IGNORECASE)
+    pattern = re.compile(r"^(-?\d+)x(-?\d+)\.webp$", re.IGNORECASE)
     tiles_z8 = {}
     files = [f for f in os.listdir(zoom8_dir) if pattern.match(f)]
     total = len(files)
@@ -150,7 +151,7 @@ def process_world_map():
     print(f"  Loaded {len(tiles_z8)} tiles at level {BASE_ZOOM}")
 
     def tile_path(z, x, y):
-        return os.path.join(BASE_DIR, str(z), f"{x}x{y}.jpg")
+        return os.path.join(BASE_DIR, str(z), f"{x}x{y}.webp")
 
     # Lower zoom levels
     print("  Generating lower zoom levels (7 -> 0)...")
@@ -182,8 +183,8 @@ def process_dungeon_maps():
         print(f"  Directory {zoom8_dir} not found, skipping.")
         return
 
-    # Parse filenames: {prefix}_{x}x{y}.jpg
-    pattern = re.compile(r"^(.+)_(-?\d+)x(-?\d+)\.jpg$", re.IGNORECASE)
+    # Parse filenames: {prefix}_{x}x{y}.webp
+    pattern = re.compile(r"^(.+)_(-?\d+)x(-?\d+)\.webp$", re.IGNORECASE)
 
     # Group by prefix
     groups = defaultdict(dict)
@@ -211,7 +212,7 @@ def process_dungeon_maps():
             continue
 
         def tile_path(z, x, y, _prefix=prefix):
-            return os.path.join(DUNGEON_DIR, str(z), f"{_prefix}_{x}x{y}.jpg")
+            return os.path.join(DUNGEON_DIR, str(z), f"{_prefix}_{x}x{y}.webp")
 
         # Lower zoom levels
         tiles_by_zoom = defaultdict(dict)

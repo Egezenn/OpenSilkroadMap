@@ -292,9 +292,9 @@ def main():
     print(f"Generated {len(npcs_output)} NPCs and {len(teleports_output)} physical teleports.")
 
     print("Step 10: Writing output JSON files...")
-    with open(os.path.join("assets", "npcs.json"), "w", encoding="utf-8") as f:
+    with open(os.path.join("map", "public", "assets", "npcs.json"), "w", encoding="utf-8") as f:
         json.dump(npcs_output, f, indent=2)
-    with open(os.path.join("assets", "teleports.json"), "w", encoding="utf-8") as f:
+    with open(os.path.join("map", "public", "assets", "teleports.json"), "w", encoding="utf-8") as f:
         json.dump(teleports_output, f, indent=2)
 
     print("Done! game data files successfully generated.")

@@ -10,7 +10,7 @@ import os
 
 from PIL import Image
 
-def convert_ddj_to_jpg(input_path, output_path):
+def convert_ddj_to_webp(input_path, output_path):
     try:
         with open(input_path, 'rb') as f:
             # Skip 20-byte JMX header
@@ -23,7 +23,7 @@ def convert_ddj_to_jpg(input_path, output_path):
         img = img.convert("RGB")
         
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        img.save(output_path, "JPEG", quality=95)
+        img.save(output_path, "WEBP", quality=80)
         return True
     except Exception as e:
         print(f"  [!] Error converting {input_path}: {e}")
@@ -31,10 +31,10 @@ def convert_ddj_to_jpg(input_path, output_path):
 
 def main():
     world_src = r"game_source/Media/minimap"
-    world_dst = r"assets/img/silkroad/minimap/8"
+    world_dst = r"map/public/assets/img/silkroad/minimap/8"
     
     dungeon_src = r"game_source/Media/minimap_d"
-    dungeon_dst = r"assets/img/silkroad/minimap/d/8"
+    dungeon_dst = r"map/public/assets/img/silkroad/minimap/d/8"
     
     # Process World Map
     if os.path.isdir(world_src):
@@ -42,8 +42,8 @@ def main():
         files = glob.glob(os.path.join(world_src, "*.ddj"))
         count = 0
         for i, f in enumerate(files, 1):
-            basename = os.path.basename(f).replace(".ddj", ".jpg")
-            if convert_ddj_to_jpg(f, os.path.join(world_dst, basename)):
+            basename = os.path.basename(f).replace(".ddj", ".webp")
+            if convert_ddj_to_webp(f, os.path.join(world_dst, basename)):
                 count += 1
             if i % 500 == 0:
                 print(f"  Processed {i}/{len(files)}...")
@@ -59,8 +59,8 @@ def main():
             for f in files:
                 if f.endswith(".ddj"):
                     input_path = os.path.join(root, f)
-                    basename = f.replace(".ddj", ".jpg")
-                    if convert_ddj_to_jpg(input_path, os.path.join(dungeon_dst, basename)):
+                    basename = f.replace(".ddj", ".webp")
+                    if convert_ddj_to_webp(input_path, os.path.join(dungeon_dst, basename)):
                         count += 1
         print(f"Done! Converted {count} dungeon tiles.")
     else:

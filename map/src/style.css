@@ -1,0 +1,298 @@
+/* OpenLayers stylesheet import via Vite */
+@import url("ol/ol.css");
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: Roboto, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  width: 100vw;
+}
+
+/* Map container */
+.map {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
+
+/* Material Panel base */
+.material-panel {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%),
+              0 6px 10px 0 rgb(0 0 0 / 14%),
+              0 1px 18px 0 rgb(0 0 0 / 12%);
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  z-index: 10;
+}
+
+/* Layer panel placement */
+.layer-panel {
+  left: 16px;
+  padding: 16px;
+  top: 16px;
+  width: 320px;
+}
+
+.panel-header {
+  align-items: center;
+  color: #bb86fc;
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.panel-header .material-icons {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.panel-header h2 {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+}
+
+/* Select element styling */
+.select-container {
+  position: relative;
+  width: 100%;
+}
+
+.material-select {
+  background-color: #2d2d2d;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #e0e0e0;
+  cursor: pointer;
+  font-family: Roboto, sans-serif;
+  font-size: 14px;
+  outline: none;
+  padding: 10px 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.material-select:focus {
+  border-color: #bb86fc;
+  box-shadow: 0 0 0 2px rgb(187 134 252 / 20%);
+}
+
+.material-select optgroup {
+  background-color: #1e1e1e;
+  color: #bb86fc;
+  font-weight: 500;
+}
+
+.material-select option {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  padding: 4px;
+}
+
+/* Coordinates overlay */
+.coords-panel {
+  align-items: center;
+  bottom: 16px;
+  flex-direction: row;
+  left: 50%;
+  padding: 8px 16px;
+  pointer-events: none; /* Let clicks pass through to map */
+  transform: translateX(-50%);
+}
+
+.coord-item {
+  align-items: center;
+  display: flex;
+  font-size: 14px;
+  letter-spacing: 0.25px;
+  white-space: nowrap;
+}
+
+.coord-item .material-icons {
+  color: #03dac6;
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.coord-item .label {
+  color: #a0a0a0;
+  font-weight: 500;
+  margin-right: 6px;
+}
+
+.coord-item .value {
+  color: #fff;
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Custom styles to match OpenLayers standard controls with dark material */
+.ol-zoom {
+  left: auto !important;
+  right: 16px !important;
+  top: 16px !important;
+}
+
+.ol-control button {
+  background-color: #1e1e1e !important;
+  border: 1px solid #444 !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%) !important;
+  color: #e0e0e0 !important;
+  font-weight: bold !important;
+}
+
+.ol-control button:hover {
+  background-color: #2d2d2d !important;
+  color: #bb86fc !important;
+}
+
+/* Popup styles */
+.ol-popup {
+  background-color: #1e1e1e;
+  border: 1px solid #444;
+  border-radius: 4px;
+  bottom: 12px;
+  box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%),
+              0 6px 10px 0 rgb(0 0 0 / 14%),
+              0 1px 18px 0 rgb(0 0 0 / 12%);
+  color: #e0e0e0;
+  font-size: 14px;
+  left: -50px;
+  min-width: 220px;
+  padding: 16px;
+  position: absolute;
+  z-index: 100;
+}
+
+.ol-popup::after, .ol-popup::before {
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 100%;
+  width: 0;
+}
+
+.ol-popup::after {
+  border-top-color: #1e1e1e;
+  border-width: 10px;
+  left: 48px;
+  margin-left: -10px;
+}
+
+.ol-popup::before {
+  border-top-color: #444;
+  border-width: 11px;
+  left: 48px;
+  margin-left: -11px;
+}
+
+.ol-popup-closer {
+  color: #a0a0a0;
+  font-size: 18px;
+  font-weight: bold;
+  position: absolute;
+  right: 10px;
+  text-decoration: none;
+  top: 6px;
+}
+
+.ol-popup-closer:hover {
+  color: #bb86fc;
+}
+
+.popup-title {
+  border-bottom: 1px solid #333;
+  color: #bb86fc;
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  margin-right: 12px;
+  padding-bottom: 4px;
+}
+
+.popup-detail {
+  color: #c0c0c0;
+  font-family: monospace;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+#toggle-all-conn:hover {
+  filter: brightness(1.2);
+}
+
+#search-results {
+  max-height: 80vh;
+}
+
+.search-result-item {
+  border-bottom: 1px solid #3c3c3c;
+  color: #e0e0e0;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 8px 12px;
+  transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+  background-color: #3d3d3d;
+  color: #bb86fc;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+#search-results details {
+  border-bottom: 1px solid #3c3c3c;
+}
+
+#search-results details:last-child {
+  border-bottom: none;
+}
+
+#search-results summary {
+  background-color: #242424;
+  color: #03dac6;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  padding: 10px 12px;
+  transition: background-color 0.2s;
+  user-select: none;
+}
+
+#search-results summary:hover {
+  background-color: #2d2d2d;
+  color: #bb86fc;
+}
+
+#search-results details[open] summary {
+  border-bottom: 1px solid #3c3c3c;
+  color: #bb86fc;
+}
+
+#search-results .search-result-item {
+  padding-left: 24px;
+}
+
+

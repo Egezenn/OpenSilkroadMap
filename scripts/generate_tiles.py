@@ -48,6 +48,7 @@ def save_tile(img, path):
 #  Generate lower zoom levels (z-1 ... 0): merge 2×2 → 1
 # ---------------------------------------------------------------------------
 
+
 def generate_lower_zooms(tiles_by_zoom, zoom_dir_fn, tile_path_fn):
     """
     Recursively generates levels from BASE_ZOOM-1 down to MIN_ZOOM.
@@ -65,11 +66,11 @@ def generate_lower_zooms(tiles_by_zoom, zoom_dir_fn, tile_path_fn):
         # Determine parent tile coordinates at the current level
         # Y in files is inverted (tile.y = -tile.y), so parent_y = -(-y // 2)
         parent_coords = set()
-        for (x, y) in parent_tiles:
+        for x, y in parent_tiles:
             parent_coords.add((x // 2, -(-y // 2)))
 
         current_tiles = {}
-        for (px, py) in parent_coords:
+        for px, py in parent_coords:
             merged = Image.new("RGB", (TILE_SIZE * 2, TILE_SIZE * 2))
             has_any = False
             # Children of parent py: y=2py (north/top) and y=2py-1 (south/bottom)
@@ -95,6 +96,7 @@ def generate_lower_zooms(tiles_by_zoom, zoom_dir_fn, tile_path_fn):
 #  Generate higher zoom level (9): split 1 → 2×2
 # ---------------------------------------------------------------------------
 
+
 def generate_higher_zoom(tiles_z8, tile_path_fn):
     """
     Generates MAX_ZOOM level (9) from BASE_ZOOM level (8).
@@ -107,10 +109,7 @@ def generate_higher_zoom(tiles_z8, tile_path_fn):
         # Bottom half (img_y=1) → child y=2y-1 (south)
         for dx in (0, 1):
             for img_y, child_y in ((0, 2 * y), (1, 2 * y - 1)):
-                crop = scaled.crop((
-                    dx * TILE_SIZE, img_y * TILE_SIZE,
-                    (dx + 1) * TILE_SIZE, (img_y + 1) * TILE_SIZE
-                ))
+                crop = scaled.crop((dx * TILE_SIZE, img_y * TILE_SIZE, (dx + 1) * TILE_SIZE, (img_y + 1) * TILE_SIZE))
                 path = tile_path_fn(MAX_ZOOM, 2 * x + dx, child_y)
                 save_tile(crop, path)
                 count += 1
@@ -121,6 +120,7 @@ def generate_higher_zoom(tiles_z8, tile_path_fn):
 # ---------------------------------------------------------------------------
 #  World map
 # ---------------------------------------------------------------------------
+
 
 def process_world_map():
     print("=" * 60)
@@ -171,6 +171,7 @@ def process_world_map():
 # ---------------------------------------------------------------------------
 #  Dungeons
 # ---------------------------------------------------------------------------
+
 
 def process_dungeon_maps():
     print()

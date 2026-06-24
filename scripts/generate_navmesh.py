@@ -78,6 +78,7 @@ RENDER_SIZE = PNG_SIZE * 2  # 512
 #  Binary helpers
 # ---------------------------------------------------------------------------
 
+
 class BinaryStream:
     """Minimal binary reader matching NavMeshReader behaviour."""
 
@@ -98,27 +99,27 @@ class BinaryStream:
             self._pos = len(self._buf) + offset
 
     def read_bytes(self, n):
-        r = self._buf[self._pos:self._pos + n]
+        r = self._buf[self._pos : self._pos + n]
         self._pos += n
         return r
 
     def read_int16(self):
-        r = struct.unpack_from('<h', self._buf, self._pos)[0]
+        r = struct.unpack_from("<h", self._buf, self._pos)[0]
         self._pos += 2
         return r
 
     def read_uint16(self):
-        r = struct.unpack_from('<H', self._buf, self._pos)[0]
+        r = struct.unpack_from("<H", self._buf, self._pos)[0]
         self._pos += 2
         return r
 
     def read_int32(self):
-        r = struct.unpack_from('<i', self._buf, self._pos)[0]
+        r = struct.unpack_from("<i", self._buf, self._pos)[0]
         self._pos += 4
         return r
 
     def read_float(self):
-        r = struct.unpack_from('<f', self._buf, self._pos)[0]
+        r = struct.unpack_from("<f", self._buf, self._pos)[0]
         self._pos += 4
         return r
 
@@ -133,7 +134,7 @@ class BinaryStream:
         return r
 
     def read_string_fixed(self, n):
-        raw = self._buf[self._pos:self._pos + n]
+        raw = self._buf[self._pos : self._pos + n]
         self._pos += n
         # Find null terminator
         end = n
@@ -141,7 +142,7 @@ class BinaryStream:
             if raw[i] == 0:
                 end = i
                 break
-        return raw[:end].decode('ascii', errors='replace')
+        return raw[:end].decode("ascii", errors="replace")
 
     def read_string(self):
         length = self.read_int32()
@@ -171,14 +172,18 @@ class BinaryStream:
 #  Region ID helpers
 # ---------------------------------------------------------------------------
 
+
 def rid_x(rid):
     return rid & 0xFF
+
 
 def rid_z(rid):
     return (rid >> 8) & 0x7F
 
+
 def rid_is_dungeon(rid):
     return (rid >> 15) & 1 == 1
+
 
 def rid_make(x, z, dungeon=False):
     v = (x & 0xFF) | ((z & 0x7F) << 8)
@@ -186,9 +191,11 @@ def rid_make(x, z, dungeon=False):
         v |= 0x8000
     return v
 
+
 # ---------------------------------------------------------------------------
 #  Edge colour (matches NavMeshExtenions.ToPen)
 # ---------------------------------------------------------------------------
+
 
 def edge_color(flag):
     if flag & FLAG_BLOCKED:
@@ -202,15 +209,18 @@ def edge_color(flag):
 #  Object ID → colour (matches NavMeshExtenions.ToColor)
 # ---------------------------------------------------------------------------
 
+
 def obj_id_color(i):
     def bit(a, b):
         return (a >> b) & 1
+
     if i == 0:
         return (0, 192, 255, 128)
     r = (bit(i, 4) + bit(i, 1) * 2 + 1) * 63
     g = (bit(i, 3) + bit(i, 2) * 2 + 1) * 63
     b = (bit(i, 5) + bit(i, 0) * 2 + 1) * 63
     return (min(r, 255), min(g, 255), min(b, 255), 128)
+
 
 def obj_id_css(i):
     r, g, b, a = obj_id_color(i)
@@ -221,13 +231,14 @@ def obj_id_css(i):
 #  Load MapInfo.mfo → set of enabled region IDs
 # ---------------------------------------------------------------------------
 
+
 def load_map_info(data_dir):
     path = os.path.join(data_dir, "NavMesh", "MapInfo.mfo")
     if not os.path.isfile(path):
         print(f"  [!] MapInfo.mfo not found at {path}")
         return set()
 
-    with open(path, 'rb') as f:
+    with open(path, "rb") as f:
         raw = f.read()
 
     s = BinaryStream(raw)
@@ -262,6 +273,7 @@ def load_map_info(data_dir):
 #  Load Object.ifo → dict[id] → path
 # ---------------------------------------------------------------------------
 
+
 def load_object_index(data_dir):
     path = os.path.join(data_dir, "NavMesh", "Object.ifo")
     if not os.path.isfile(path):
@@ -269,7 +281,7 @@ def load_object_index(data_dir):
         return {}
 
     obj_map = {}
-    with open(path, 'r', encoding='ascii', errors='replace') as f:
+    with open(path, "r", encoding="ascii", errors="replace") as f:
         sig = f.readline().strip()
         if sig != "JMXVOBJI1000":
             print(f"  [!] Invalid Object.ifo signature: {sig}")
@@ -291,6 +303,7 @@ def load_object_index(data_dir):
 #  Load DungeonInfo.txt → dict[rid] → dof_path
 # ---------------------------------------------------------------------------
 
+
 def load_dungeon_info(data_dir):
     path = os.path.join(data_dir, "Dungeon", "DungeonInfo.txt")
     if not os.path.isfile(path):
@@ -303,7 +316,7 @@ def load_dungeon_info(data_dir):
 
     dungeons = {}
     pattern = re.compile(r'^(?:(\d)\t)?(\d+)\t"(.+)"$')
-    with open(path, 'r', encoding='ascii', errors='replace') as f:
+    with open(path, "r", encoding="ascii", errors="replace") as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("//"):
@@ -328,6 +341,7 @@ def load_dungeon_info(data_dir):
 # ---------------------------------------------------------------------------
 #  Parse NavMeshObj from .bms file (JMXVBMS 0110)
 # ---------------------------------------------------------------------------
+
 
 def parse_navmesh_obj_bms(data):
     """Parse a .bms NavMeshObj. Returns (vertices, cells, global_edges, internal_edges, struct_option)."""
@@ -412,18 +426,19 @@ def parse_navmesh_obj_bms(data):
         internal_edges.append((p0, p1, flag))
 
     return {
-        'name': name,
-        'vertices': vertices,
-        'cells': cells,
-        'global_edges': global_edges,
-        'internal_edges': internal_edges,
-        'struct_option': struct_option,
+        "name": name,
+        "vertices": vertices,
+        "cells": cells,
+        "global_edges": global_edges,
+        "internal_edges": internal_edges,
+        "struct_option": struct_option,
     }
 
 
 # ---------------------------------------------------------------------------
 #  Parse NavMeshObj from .bsr file (JMXVRES 0109)
 # ---------------------------------------------------------------------------
+
 
 def parse_navmesh_obj_bsr(data):
     s = BinaryStream(data)
@@ -487,32 +502,33 @@ def parse_navmesh_obj_cpd(data):
 
 _obj_cache = {}
 
+
 def load_navmesh_obj(data_dir, obj_path):
     """Load a NavMeshObj following the chain: .cpd → .bsr → .bms"""
     if obj_path in _obj_cache:
         return _obj_cache[obj_path]
 
-    full_path = os.path.join(data_dir, obj_path.replace('\\', os.sep))
+    full_path = os.path.join(data_dir, obj_path.replace("\\", os.sep))
     if not os.path.isfile(full_path):
         _obj_cache[obj_path] = None
         return None
 
-    with open(full_path, 'rb') as f:
+    with open(full_path, "rb") as f:
         data = f.read()
 
-    ext = obj_path.rsplit('.', 1)[-1].lower()
+    ext = obj_path.rsplit(".", 1)[-1].lower()
 
-    if ext == 'bms':
+    if ext == "bms":
         result = parse_navmesh_obj_bms(data)
         _obj_cache[obj_path] = result
         return result
-    elif ext == 'bsr':
+    elif ext == "bsr":
         bms_path = parse_navmesh_obj_bsr(data)
         if bms_path:
             result = load_navmesh_obj(data_dir, bms_path)
             _obj_cache[obj_path] = result
             return result
-    elif ext == 'cpd':
+    elif ext == "cpd":
         bsr_path = parse_navmesh_obj_cpd(data)
         if bsr_path:
             result = load_navmesh_obj(data_dir, bsr_path)
@@ -526,6 +542,7 @@ def load_navmesh_obj(data_dir, obj_path):
 # ---------------------------------------------------------------------------
 #  Parse terrain NVM file
 # ---------------------------------------------------------------------------
+
 
 def parse_terrain_nvm(data, data_dir, obj_index):
     """
@@ -566,13 +583,15 @@ def parse_terrain_nvm(data, data_dir, obj_index):
             obj_flag, obj_path = obj_index[obj_idx]
             obj_data = load_navmesh_obj(data_dir, obj_path)
 
-        instances.append({
-            'obj_idx': obj_idx,
-            'local_pos': local_pos,
-            'yaw': yaw,
-            'world_uid': world_uid,
-            'obj_data': obj_data,
-        })
+        instances.append(
+            {
+                "obj_idx": obj_idx,
+                "local_pos": local_pos,
+                "yaw": yaw,
+                "world_uid": world_uid,
+                "obj_data": obj_data,
+            }
+        )
 
     # Cells
     total_cell_count = s.read_int32()
@@ -615,15 +634,16 @@ def parse_terrain_nvm(data, data_dir, obj_index):
     # SurfaceMap (skip)
 
     return {
-        'instances': instances,
-        'global_edges': global_edges,
-        'internal_edges': internal_edges,
+        "instances": instances,
+        "global_edges": global_edges,
+        "internal_edges": internal_edges,
     }
 
 
 # ---------------------------------------------------------------------------
 #  Parse dungeon DOF file (JMXVDOF 0101)
 # ---------------------------------------------------------------------------
+
 
 def parse_dungeon_dof(data, data_dir):
     """
@@ -694,11 +714,11 @@ def parse_dungeon_dof(data, data_dir):
         for _ in range(block_obj_count):
             s.read_string()  # name
             s.read_string()  # path
-            s.read_vec3()    # position
+            s.read_vec3()  # position
             s.seek(24, 1)
             block_obj_flag = s.read_int32()
             s.read_int32()
-            s.read_float()   # radius squared
+            s.read_float()  # radius squared
             if block_obj_flag & 4:
                 s.seek(4, 1)  # color
 
@@ -711,18 +731,20 @@ def parse_dungeon_dof(data, data_dir):
         # Load the navmesh object
         obj_data = load_navmesh_obj(data_dir, path)
 
-        blocks.append({
-            'id': i,
-            'path': path,
-            'name': name,
-            'position': position,
-            'yaw': yaw,
-            'floor_index': floor_index,
-            'room_index': room_index,
-            'obj_data': obj_data,
-            'bb_min': bb_min,
-            'bb_max': bb_max,
-        })
+        blocks.append(
+            {
+                "id": i,
+                "path": path,
+                "name": name,
+                "position": position,
+                "yaw": yaw,
+                "floor_index": floor_index,
+                "room_index": room_index,
+                "obj_data": obj_data,
+                "bb_min": bb_min,
+                "bb_max": bb_max,
+            }
+        )
 
     # Labels
     floor_labels = {}
@@ -736,16 +758,17 @@ def parse_dungeon_dof(data, data_dir):
             floor_labels[i] = s.read_string()
 
     return {
-        'blocks': blocks,
-        'floor_labels': floor_labels,
-        'bbox_min': bbox_min,
-        'bbox_max': bbox_max,
+        "blocks": blocks,
+        "floor_labels": floor_labels,
+        "bbox_min": bbox_min,
+        "bbox_max": bbox_max,
     }
 
 
 # ---------------------------------------------------------------------------
 #  PNG tile rendering
 # ---------------------------------------------------------------------------
+
 
 def transform_obj_point(px, pz, yaw, lx, lz):
     """Apply rotation (-yaw) and translation to get world-space coords."""
@@ -767,8 +790,10 @@ def edge_rgba(flag):
 
 def obj_id_rgba(i):
     """Object colour as RGBA tuple (alpha=128)."""
+
     def bit(a, b):
         return (a >> b) & 1
+
     if i == 0:
         return (0, 192, 255, 128)
     r = (bit(i, 4) + bit(i, 1) * 2 + 1) * 63
@@ -794,33 +819,33 @@ def render_terrain_region(nvm_data, size):
 
     # Object triangles
     drawn_uids = set()
-    for inst in nvm_data['instances']:
-        if inst['world_uid'] in drawn_uids:
+    for inst in nvm_data["instances"]:
+        if inst["world_uid"] in drawn_uids:
             continue
-        drawn_uids.add(inst['world_uid'])
-        obj = inst['obj_data']
+        drawn_uids.add(inst["world_uid"])
+        obj = inst["obj_data"]
         if obj is None:
             continue
-        lx, ly, lz = inst['local_pos']
-        yaw = inst['yaw']
-        fill = obj_id_rgba(inst['world_uid'])
+        lx, ly, lz = inst["local_pos"]
+        yaw = inst["yaw"]
+        fill = obj_id_rgba(inst["world_uid"])
 
-        for vi0, vi1, vi2 in obj['cells']:
-            verts = obj['vertices']
+        for vi0, vi1, vi2 in obj["cells"]:
+            verts = obj["vertices"]
             pts = []
             for vi in (vi0, vi1, vi2):
                 wx, wz = transform_obj_point(verts[vi][0], verts[vi][2], yaw, lx, lz)
                 pts.append((tx(wx), ty(wz)))
             draw.polygon(pts, fill=fill)
 
-        for edges, w in ((obj['global_edges'], 1), (obj['internal_edges'], 1)):
+        for edges, w in ((obj["global_edges"], 1), (obj["internal_edges"], 1)):
             for p0, p1, flag in edges:
                 x0, z0 = transform_obj_point(p0[0], p0[2], yaw, lx, lz)
                 x1, z1 = transform_obj_point(p1[0], p1[2], yaw, lx, lz)
                 draw.line([(tx(x0), ty(z0)), (tx(x1), ty(z1))], fill=edge_rgba(flag), width=w)
 
     # Terrain edges
-    for edges, w in ((nvm_data['global_edges'], 1), (nvm_data['internal_edges'], 1)):
+    for edges, w in ((nvm_data["global_edges"], 1), (nvm_data["internal_edges"], 1)):
         for line, flag in edges:
             (x0, z0), (x1, z1) = line
             draw.line([(tx(x0), ty(z0)), (tx(x1), ty(z1))], fill=edge_rgba(flag), width=w)
@@ -838,6 +863,7 @@ def save_webp(img, path):
 #  Generate lower zoom levels: merge 2x2 -> 1
 # ---------------------------------------------------------------------------
 
+
 def generate_lower_zooms(tiles_z8, out_dir, base_zoom=8, min_zoom=0):
     """
     Generate zoom levels base_zoom-1 down to min_zoom by merging 2x2 tiles.
@@ -853,12 +879,12 @@ def generate_lower_zooms(tiles_z8, out_dir, base_zoom=8, min_zoom=0):
 
         # Parent tile coordinates (y inverted like in generate_tiles.py)
         parent_coords = set()
-        for (x, y) in parent_tiles:
+        for x, y in parent_tiles:
             parent_coords.add((x // 2, -(-y // 2)))
 
         current_tiles = {}
         tile_size = PNG_SIZE
-        for (px, py) in parent_coords:
+        for px, py in parent_coords:
             merged = Image.new("RGBA", (tile_size * 2, tile_size * 2), (0, 0, 0, 0))
             has_any = False
             for dx in (0, 1):
@@ -882,6 +908,7 @@ def generate_lower_zooms(tiles_z8, out_dir, base_zoom=8, min_zoom=0):
 # ---------------------------------------------------------------------------
 #  Process world map regions -> PNG tiles at all zoom levels
 # ---------------------------------------------------------------------------
+
 
 def process_world_navmesh(data_dir, out_dir, obj_index):
     print("=" * 60)
@@ -913,7 +940,7 @@ def process_world_navmesh(data_dir, out_dir, obj_index):
         if not os.path.isfile(nvm_file):
             continue
 
-        with open(nvm_file, 'rb') as f:
+        with open(nvm_file, "rb") as f:
             raw = f.read()
 
         nvm_data = parse_terrain_nvm(raw, data_dir, obj_index)
@@ -939,10 +966,7 @@ def process_world_navmesh(data_dir, out_dir, obj_index):
     for (x, y), img in tiles_hires.items():
         for dx in (0, 1):
             for img_y, child_y in ((0, 2 * y), (1, 2 * y - 1)):
-                crop = img.crop((
-                    dx * tile_size, img_y * tile_size,
-                    (dx + 1) * tile_size, (img_y + 1) * tile_size
-                ))
+                crop = img.crop((dx * tile_size, img_y * tile_size, (dx + 1) * tile_size, (img_y + 1) * tile_size))
                 if crop.getbbox() is not None:
                     path = os.path.join(nm_out, "9", f"{2 * x + dx}x{child_y}.webp")
                     save_webp(crop, path)
@@ -972,6 +996,7 @@ def process_world_navmesh(data_dir, out_dir, obj_index):
 #  Process dungeons -> PNG images (one per floor)
 # ---------------------------------------------------------------------------
 
+
 def process_dungeon_navmesh(data_dir, out_dir):
     print()
     print("=" * 60)
@@ -986,12 +1011,12 @@ def process_dungeon_navmesh(data_dir, out_dir):
 
     count = 0
     for rid, dof_rel_path in sorted(dungeons.items()):
-        dof_path = os.path.join(data_dir, dof_rel_path.replace('\\', os.sep))
+        dof_path = os.path.join(data_dir, dof_rel_path.replace("\\", os.sep))
         if not os.path.isfile(dof_path):
             print(f"  [!] DOF not found: {dof_path}")
             continue
 
-        with open(dof_path, 'rb') as f:
+        with open(dof_path, "rb") as f:
             raw = f.read()
 
         try:
@@ -1005,8 +1030,8 @@ def process_dungeon_navmesh(data_dir, out_dir):
 
         # Group blocks by floor
         floors = defaultdict(list)
-        for block in dof_data['blocks']:
-            floors[block['floor_index']].append(block)
+        for block in dof_data["blocks"]:
+            floors[block["floor_index"]].append(block)
 
         dof_basename = os.path.splitext(os.path.basename(dof_path))[0]
         dungeon_id = rid & 0x7FFF
@@ -1016,12 +1041,12 @@ def process_dungeon_navmesh(data_dir, out_dir):
             all_xs = []
             all_zs = []
             for block in floor_blocks:
-                obj = block['obj_data']
+                obj = block["obj_data"]
                 if obj is None:
                     continue
-                lx, ly, lz = block['position']
-                yaw = block['yaw']
-                for vert in obj['vertices']:
+                lx, ly, lz = block["position"]
+                yaw = block["yaw"]
+                for vert in obj["vertices"]:
                     wx, wz = transform_obj_point(vert[0], vert[2], yaw, lx, lz)
                     all_xs.append(wx)
                     all_zs.append(wz)
@@ -1063,17 +1088,17 @@ def process_dungeon_navmesh(data_dir, out_dir):
                 return (max_z - z) * scale
 
             for block in floor_blocks:
-                obj = block['obj_data']
+                obj = block["obj_data"]
                 if obj is None:
                     continue
 
-                lx, ly, lz = block['position']
-                yaw = block['yaw']
-                bid = block['id']
+                lx, ly, lz = block["position"]
+                yaw = block["yaw"]
+                bid = block["id"]
                 fill = obj_id_rgba(bid)
 
-                for vi0, vi1, vi2 in obj['cells']:
-                    verts = obj['vertices']
+                for vi0, vi1, vi2 in obj["cells"]:
+                    verts = obj["vertices"]
                     pts = []
                     for vi in (vi0, vi1, vi2):
                         wx, wz = transform_obj_point(verts[vi][0], verts[vi][2], yaw, lx, lz)
@@ -1081,12 +1106,11 @@ def process_dungeon_navmesh(data_dir, out_dir):
                     draw.polygon(pts, fill=fill)
                     has_content = True
 
-                for edges, w in ((obj['global_edges'], 1), (obj['internal_edges'], 1)):
+                for edges, w in ((obj["global_edges"], 1), (obj["internal_edges"], 1)):
                     for p0, p1, flag in edges:
                         x0, z0 = transform_obj_point(p0[0], p0[2], yaw, lx, lz)
                         x1, z1 = transform_obj_point(p1[0], p1[2], yaw, lx, lz)
-                        draw.line([(txd(x0), tyd(z0)), (txd(x1), tyd(z1))],
-                                  fill=edge_rgba(flag), width=w)
+                        draw.line([(txd(x0), tyd(z0)), (txd(x1), tyd(z1))], fill=edge_rgba(flag), width=w)
                         has_content = True
 
             if not has_content:
@@ -1100,14 +1124,16 @@ def process_dungeon_navmesh(data_dir, out_dir):
             region_key = str(rid)
             if region_key not in manifest:
                 manifest[region_key] = []
-            manifest[region_key].append({
-                'file': webp_name,
-                'floor': floor_idx,
-                'minX': round(min_x, 2),
-                'minZ': round(min_z, 2),
-                'maxX': round(max_x, 2),
-                'maxZ': round(max_z, 2),
-            })
+            manifest[region_key].append(
+                {
+                    "file": webp_name,
+                    "floor": floor_idx,
+                    "minX": round(min_x, 2),
+                    "minZ": round(min_z, 2),
+                    "maxX": round(max_x, 2),
+                    "maxZ": round(max_z, 2),
+                }
+            )
 
             count += 1
             print(f"  [{dungeon_id}] {dof_basename} floor {floor_idx} -> {webp_name}")
@@ -1115,7 +1141,7 @@ def process_dungeon_navmesh(data_dir, out_dir):
     # Write manifest JSON
     manifest_path = os.path.join(nm_out, "manifest.json")
     os.makedirs(os.path.dirname(manifest_path), exist_ok=True)
-    with open(manifest_path, 'w', encoding='utf-8') as f:
+    with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
     print(f"  Manifest written: {manifest_path}")
     print(f"  Total: {count} dungeon navmesh WebPs")
@@ -1125,12 +1151,15 @@ def process_dungeon_navmesh(data_dir, out_dir):
 #  Entry point
 # ---------------------------------------------------------------------------
 
+
 def main():
     parser = argparse.ArgumentParser(description="Generate navmesh PNG overlays for OpenSilkroadMap")
-    parser.add_argument("--data", default=r"game_source/Data",
-                        help="Path to Silkroad Data directory")
-    parser.add_argument("--out", default=os.path.join("map", "public", "assets", "img", "silkroad", "minimap"),
-                        help="Output directory for navmesh PNGs")
+    parser.add_argument("--data", default=r"game_source/Data", help="Path to Silkroad Data directory")
+    parser.add_argument(
+        "--out",
+        default=os.path.join("map", "public", "assets", "img", "silkroad", "minimap"),
+        help="Output directory for navmesh PNGs",
+    )
     args = parser.parse_args()
 
     data_dir = args.data

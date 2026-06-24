@@ -1,131 +1,234 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OpenSilkroadMap - Viewer</title>
-    <!-- Material Design fonts & icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    <link rel="stylesheet" href="./src/style.css" />
-  </head>
-  <body>
-    <div id="map" class="map"></div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>OpenSilkroadMap - Viewer</title>
+        <!-- Material Design fonts & icons -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+            rel="stylesheet"
+        />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link rel="stylesheet" href="./src/style.css" />
+    </head>
+    <body>
+        <div id="map" class="map"></div>
 
-    <!-- UI Overlay Panels (Material Design style) -->
-    <div class="material-panel layer-panel">
-      <!-- Search Panel Container -->
-      <div class="search-container" style="margin-bottom: 16px; position: relative">
-        <div class="panel-header" style="margin-bottom: 8px">
-          <span class="material-icons" style="color: #03dac6">search</span>
-          <h2>Search Objects</h2>
+        <!-- UI Overlay Panels (Material Design style) -->
+        <div class="material-panel layer-panel">
+            <!-- Search Panel Container -->
+            <div class="search-container" style="margin-bottom: 16px; position: relative">
+                <div class="panel-header" style="margin-bottom: 8px">
+                    <span class="material-icons" style="color: #03dac6">search</span>
+                    <h2>Search Objects</h2>
+                </div>
+                <input
+                    type="text"
+                    id="search-input"
+                    class="material-select"
+                    placeholder="Search NPC or Teleport..."
+                    autocomplete="off"
+                />
+                <div
+                    id="search-results"
+                    style="
+                        display: none;
+                        position: absolute;
+                        top: calc(100% + 4px);
+                        left: 0;
+                        right: 0;
+                        background-color: #2d2d2d;
+                        border: 1px solid #444;
+                        border-radius: 4px;
+                        overflow-y: auto;
+                        z-index: 100;
+                        box-shadow: 0 4px 6px rgb(0 0 0 / 30%);
+                    "
+                ></div>
+            </div>
+
+            <div class="panel-header">
+                <span class="material-icons">layers</span>
+                <h2>Map Layer</h2>
+            </div>
+            <div class="select-container">
+                <select id="layer-select" class="material-select">
+                    <option value="world">World Map</option>
+                    <optgroup label="Donwhang Stone Cave">
+                        <option value="32769_1">Donwhang Dungeon B1 (Lv.61~64)</option>
+                        <option value="32769_2">Donwhang Dungeon B2 (Lv.64~66)</option>
+                        <option value="32769_3">Donwhang Dungeon B3 (Lv.65~68)</option>
+                        <option value="32769_4">Donwhang Dungeon B4 (Lv.69~70)</option>
+                    </optgroup>
+                    <optgroup label="Tomb of Qin-Shi">
+                        <option value="32775">Qin-Shi Tomb B1 (Lv.81~85)</option>
+                        <option value="32774">Qin-Shi Tomb B2 (Lv.86~90)</option>
+                        <option value="32773">Qin-Shi Tomb B3 (Lv.90~95)</option>
+                        <option value="32772">Qin-Shi Tomb B4 (Lv.96~99)</option>
+                        <option value="32771">Qin-Shi Tomb B5</option>
+                        <option value="32770">Qin-Shi Tomb B6</option>
+                    </optgroup>
+                    <optgroup label="Other Areas">
+                        <option value="32784">Temple</option>
+                        <option value="32786">Flame Mountain</option>
+                        <option value="32785">Cave of Meditation</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="toggle-container" style="margin-top: 12px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="maptiles-toggle" checked style="cursor: pointer; accent-color: #bb86fc" />
+                <label for="maptiles-toggle" style="color: #e0e0e0; cursor: pointer; font-size: 14px; user-select: none"
+                    >Show Map Tiles</label
+                >
+            </div>
+            <div class="toggle-container" style="margin-top: 6px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="navmesh-toggle" style="cursor: pointer; accent-color: #bb86fc" />
+                <label for="navmesh-toggle" style="color: #e0e0e0; cursor: pointer; font-size: 14px; user-select: none"
+                    >Show NavMesh (Disabled when zoom≤6)</label
+                >
+            </div>
+            <div class="toggle-container" style="margin-top: 6px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="region-info-toggle" style="cursor: pointer; accent-color: #bb86fc" />
+                <label
+                    for="region-info-toggle"
+                    style="color: #e0e0e0; cursor: pointer; font-size: 14px; user-select: none"
+                    >Show Region Info</label
+                >
+            </div>
+            <div
+                class="toggles-header"
+                style="
+                    margin-top: 14px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    border-top: 1px solid #333;
+                    padding-top: 8px;
+                "
+            >
+                <span
+                    style="
+                        font-size: 11px;
+                        font-weight: 500;
+                        color: #a0a0a0;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    "
+                    >Teleport Connections</span
+                >
+                <button
+                    id="toggle-all-conn"
+                    style="
+                        background: none;
+                        border: none;
+                        color: #bb86fc;
+                        font-size: 11px;
+                        cursor: pointer;
+                        padding: 0;
+                        font-family: &quot;Roboto&quot;, sans-serif;
+                        font-weight: 500;
+                        outline: none;
+                        transition: color 0.2s;
+                    "
+                >
+                    Toggle All
+                </button>
+            </div>
+            <div class="toggle-container" style="margin-top: 6px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="toggle-conn-0" style="cursor: pointer; accent-color: #bb86fc" />
+                <label for="toggle-conn-0" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none"
+                    >Dimensional Gate</label
+                >
+            </div>
+            <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="toggle-conn-1" style="cursor: pointer; accent-color: #ff9100" />
+                <label for="toggle-conn-1" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none"
+                    >Fortress Gate</label
+                >
+            </div>
+            <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="toggle-conn-2" style="cursor: pointer; accent-color: #00e676" />
+                <label for="toggle-conn-2" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none"
+                    >Revival Gate</label
+                >
+            </div>
+            <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="toggle-conn-3" style="cursor: pointer; accent-color: #00e5ff" />
+                <label for="toggle-conn-3" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none"
+                    >Glory Gate</label
+                >
+            </div>
+            <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="toggle-conn-4" style="cursor: pointer; accent-color: #ffd740" />
+                <label for="toggle-conn-4" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none"
+                    >Small Fortress Gate</label
+                >
+            </div>
+            <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="toggle-conn-5" style="cursor: pointer; accent-color: #ff5252" />
+                <label for="toggle-conn-5" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none"
+                    >Teleport Gate</label
+                >
+            </div>
+            <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="toggle-conn-6" style="cursor: pointer; accent-color: #1de9b6" />
+                <label for="toggle-conn-6" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none"
+                    >Tahomet Gate</label
+                >
+            </div>
+            <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" id="toggle-conn-7" style="cursor: pointer; accent-color: #ff4081" />
+                <label for="toggle-conn-7" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none"
+                    >NPC Teleport</label
+                >
+            </div>
+            <div style="margin-top: 14px; border-top: 1px solid #333; padding-top: 12px">
+                <button
+                    id="precache-btn"
+                    class="material-select"
+                    style="
+                        background-color: #bb86fc;
+                        color: #121212;
+                        font-weight: bold;
+                        border: none;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                    "
+                >
+                    <span id="precache-icon" class="material-icons" style="font-size: 18px"
+                        >check_box_outline_blank</span
+                    >
+                    <span>Precache PMTiles</span>
+                </button>
+                <div
+                    id="precache-progress"
+                    style="display: none; font-size: 12px; color: #a0a0a0; margin-top: 6px; text-align: center"
+                >
+                    Caching: <span id="precache-percent">0%</span> (<span id="precache-count">0/0</span>)
+                </div>
+            </div>
         </div>
-        <input type="text" id="search-input" class="material-select" placeholder="Search NPC or Teleport..." autocomplete="off" />
-        <div id="search-results" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background-color: #2d2d2d; border: 1px solid #444; border-radius: 4px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 6px rgb(0 0 0 / 30%)"></div>
-      </div>
 
-      <div class="panel-header">
-        <span class="material-icons">layers</span>
-        <h2>Map Layer</h2>
-      </div>
-      <div class="select-container">
-        <select id="layer-select" class="material-select">
-          <option value="world">World Map</option>
-          <optgroup label="Donwhang Stone Cave">
-            <option value="32769_1">Donwhang Dungeon B1 (Lv.61~64)</option>
-            <option value="32769_2">Donwhang Dungeon B2 (Lv.64~66)</option>
-            <option value="32769_3">Donwhang Dungeon B3 (Lv.65~68)</option>
-            <option value="32769_4">Donwhang Dungeon B4 (Lv.69~70)</option>
-          </optgroup>
-          <optgroup label="Tomb of Qin-Shi">
-            <option value="32775">Qin-Shi Tomb B1 (Lv.81~85)</option>
-            <option value="32774">Qin-Shi Tomb B2 (Lv.86~90)</option>
-            <option value="32773">Qin-Shi Tomb B3 (Lv.90~95)</option>
-            <option value="32772">Qin-Shi Tomb B4 (Lv.96~99)</option>
-            <option value="32771">Qin-Shi Tomb B5</option>
-            <option value="32770">Qin-Shi Tomb B6</option>
-          </optgroup>
-          <optgroup label="Other Areas">
-            <option value="32784">Temple</option>
-            <option value="32786">Flame Mountain</option>
-            <option value="32785">Cave of Meditation</option>
-          </optgroup>
-        </select>
-      </div>
-      <div class="toggle-container" style="margin-top: 12px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="maptiles-toggle" checked style="cursor: pointer; accent-color: #bb86fc" />
-        <label for="maptiles-toggle" style="color: #e0e0e0; cursor: pointer; font-size: 14px; user-select: none">Show Map Tiles</label>
-      </div>
-      <div class="toggle-container" style="margin-top: 6px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="navmesh-toggle" style="cursor: pointer; accent-color: #bb86fc" />
-        <label for="navmesh-toggle" style="color: #e0e0e0; cursor: pointer; font-size: 14px; user-select: none">Show NavMesh (Disabled when zoom≤6)</label>
-      </div>
-      <div class="toggle-container" style="margin-top: 6px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="region-info-toggle" style="cursor: pointer; accent-color: #bb86fc" />
-        <label for="region-info-toggle" style="color: #e0e0e0; cursor: pointer; font-size: 14px; user-select: none">Show Region Info</label>
-      </div>
-      <div class="toggles-header" style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; padding-top: 8px">
-        <span style="font-size: 11px; font-weight: 500; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px">Teleport Connections</span>
-        <button id="toggle-all-conn" style="background: none; border: none; color: #bb86fc; font-size: 11px; cursor: pointer; padding: 0; font-family: &quot;Roboto&quot;, sans-serif; font-weight: 500; outline: none; transition: color 0.2s">Toggle All</button>
-      </div>
-      <div class="toggle-container" style="margin-top: 6px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="toggle-conn-0" style="cursor: pointer; accent-color: #bb86fc" />
-        <label for="toggle-conn-0" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none">Dimensional Gate</label>
-      </div>
-      <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="toggle-conn-1" style="cursor: pointer; accent-color: #ff9100" />
-        <label for="toggle-conn-1" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none">Fortress Gate</label>
-      </div>
-      <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="toggle-conn-2" style="cursor: pointer; accent-color: #00e676" />
-        <label for="toggle-conn-2" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none">Revival Gate</label>
-      </div>
-      <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="toggle-conn-3" style="cursor: pointer; accent-color: #00e5ff" />
-        <label for="toggle-conn-3" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none">Glory Gate</label>
-      </div>
-      <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="toggle-conn-4" style="cursor: pointer; accent-color: #ffd740" />
-        <label for="toggle-conn-4" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none">Small Fortress Gate</label>
-      </div>
-      <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="toggle-conn-5" style="cursor: pointer; accent-color: #ff5252" />
-        <label for="toggle-conn-5" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none">Teleport Gate</label>
-      </div>
-      <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="toggle-conn-6" style="cursor: pointer; accent-color: #1de9b6" />
-        <label for="toggle-conn-6" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none">Tahomet Gate</label>
-      </div>
-      <div class="toggle-container" style="margin-top: 4px; display: flex; align-items: center; gap: 8px">
-        <input type="checkbox" id="toggle-conn-7" style="cursor: pointer; accent-color: #ff4081" />
-        <label for="toggle-conn-7" style="color: #e0e0e0; cursor: pointer; font-size: 13px; user-select: none">NPC Teleport</label>
-      </div>
-      <div style="margin-top: 14px; border-top: 1px solid #333; padding-top: 12px">
-        <button id="precache-btn" class="material-select" style="background-color: #bb86fc; color: #121212; font-weight: bold; border: none; display: flex; align-items: center; justify-content: center; gap: 8px">
-          <span id="precache-icon" class="material-icons" style="font-size: 18px">check_box_outline_blank</span>
-          <span>Precache PMTiles</span>
-        </button>
-        <div id="precache-progress" style="display: none; font-size: 12px; color: #a0a0a0; margin-top: 6px; text-align: center">Caching: <span id="precache-percent">0%</span> (<span id="precache-count">0/0</span>)</div>
-      </div>
-    </div>
+        <!-- Coordinate Status Bar -->
+        <div class="material-panel coords-panel">
+            <div class="coord-item">
+                <span class="material-icons">gps_fixed</span>
+                <span class="label">SRO Coords:</span>
+                <span id="coords-val" class="value">X: 0, Y: 0, R: 0</span>
+            </div>
+        </div>
 
-    <!-- Coordinate Status Bar -->
-    <div class="material-panel coords-panel">
-      <div class="coord-item">
-        <span class="material-icons">gps_fixed</span>
-        <span class="label">SRO Coords:</span>
-        <span id="coords-val" class="value">X: 0, Y: 0, R: 0</span>
-      </div>
-    </div>
+        <!-- Popup Overlay container -->
+        <div id="popup" class="ol-popup">
+            <a href="#" id="popup-closer" class="ol-popup-closer">&times;</a>
+            <div id="popup-content"></div>
+        </div>
 
-    <!-- Popup Overlay container -->
-    <div id="popup" class="ol-popup">
-      <a href="#" id="popup-closer" class="ol-popup-closer">&times;</a>
-      <div id="popup-content"></div>
-    </div>
-
-    <script type="module" src="./src/main.ts"></script>
-  </body>
+        <script type="module" src="./src/main.ts"></script>
+    </body>
 </html>

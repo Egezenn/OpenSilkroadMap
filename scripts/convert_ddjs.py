@@ -10,18 +10,19 @@ import os
 
 from PIL import Image
 
+
 def convert_ddj_to_webp(input_path, output_path):
     try:
-        with open(input_path, 'rb') as f:
+        with open(input_path, "rb") as f:
             # Skip 20-byte JMX header
             f.seek(20)
             dds_data = f.read()
-        
+
         # Use io.BytesIO to feed to Pillow
         img = Image.open(io.BytesIO(dds_data))
         # Convert to RGB (DDS can be various formats, minimaps are usually DXT1/RGB)
         img = img.convert("RGB")
-        
+
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         img.save(output_path, "WEBP", quality=80)
         return True
@@ -29,13 +30,14 @@ def convert_ddj_to_webp(input_path, output_path):
         print(f"  [!] Error converting {input_path}: {e}")
         return False
 
+
 def main():
     world_src = r"game_source/Media/minimap"
     world_dst = r"map/public/assets/img/silkroad/minimap/8"
-    
+
     dungeon_src = r"game_source/Media/minimap_d"
     dungeon_dst = r"map/public/assets/img/silkroad/minimap/d/8"
-    
+
     # Process World Map
     if os.path.isdir(world_src):
         print(f"Processing World Map from {world_src}...")
@@ -50,7 +52,7 @@ def main():
         print(f"Done! Converted {count} world tiles.")
     else:
         print(f"Skipping World Map: {world_src} not found.")
-    
+
     # Process Dungeons
     if os.path.isdir(dungeon_src):
         print(f"\nProcessing Dungeons from {dungeon_src}...")
@@ -65,6 +67,7 @@ def main():
         print(f"Done! Converted {count} dungeon tiles.")
     else:
         print(f"Skipping Dungeons: {dungeon_src} not found.")
+
 
 if __name__ == "__main__":
     main()

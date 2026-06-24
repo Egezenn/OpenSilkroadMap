@@ -38,6 +38,9 @@ export function updateMarkers(currentLayerKey: string) {
   connectionSource.clear();
   const isWorld = currentLayerKey === 'world';
 
+  // Draw dashed connection lines for NPCs if enabled
+  const showNPCTeleports = (document.getElementById('toggle-conn-7') as HTMLInputElement | null)?.checked ?? false;
+
   // Draw NPCs
   npcsData.forEach((npc) => {
     let region = npc.region;
@@ -62,8 +65,6 @@ export function updateMarkers(currentLayerKey: string) {
       feature.setStyle(npcStyle);
       markerSource.addFeature(feature);
 
-      // Draw dashed connection lines for NPCs if enabled
-      const showNPCTeleports = (document.getElementById('toggle-conn-7') as HTMLInputElement | null)?.checked ?? false;
       if (renderTeleports && showNPCTeleports && npc.teleport && Array.isArray(npc.teleport)) {
         npc.teleport.forEach((dest: any) => {
           let destRegion = dest.region;
@@ -93,6 +94,8 @@ export function updateMarkers(currentLayerKey: string) {
     }
   });
 
+  const connectionToggleCache: Record<number, boolean> = {};
+
   // Draw Teleports (Always visible)
   teleportsData.forEach((tp) => {
     let region = tp.region;
@@ -119,7 +122,12 @@ export function updateMarkers(currentLayerKey: string) {
       markerSource.addFeature(feature);
 
       // Draw dashed connection lines if enabled for this category
-      const showConnections = (document.getElementById(`toggle-conn-${tp.type}`) as HTMLInputElement | null)?.checked ?? false;
+      let showConnections = connectionToggleCache[tp.type];
+      if (showConnections === undefined) {
+        showConnections = (document.getElementById(`toggle-conn-${tp.type}`) as HTMLInputElement | null)?.checked ?? false;
+        connectionToggleCache[tp.type] = showConnections;
+      }
+
       if (renderTeleports && showConnections && tp.teleport && Array.isArray(tp.teleport)) {
         tp.teleport.forEach((dest: any) => {
           let destRegion = dest.region;
